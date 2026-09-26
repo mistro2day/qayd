@@ -97,12 +97,7 @@ export async function loginUser(data: { username: string; password: string }) {
     maxAge: 60 * 60 * 24 * 7,
   });
 
-  await createActivityLog({
-    title: `تسجيل دخول ناجح`,
-    details: `قام المستخدم ${user.fullName} (${user.username}) بتسجيل الدخول للنظام`,
-    type: "SUCCESS",
-    userId: user.id,
-  });
+
 
   return {
     success: true,
@@ -170,9 +165,8 @@ export async function getRecentActivities(limit = 5) {
     });
 
     const filteredActivities = activities.filter((activity: { title?: string | null }) => {
-      if (limit > 10) return true; // Show all in Settings Activity Log table
       const title = (activity.title ?? "").toLowerCase();
-      return !title.includes("تسجيل دخول") && !title.includes("تسجيل خروج");
+      return !title.includes("تسجيل دخول") && !title.includes("تسجيل خروج") && !title.includes("دخول ناجح");
     });
 
     return { success: true, activities: filteredActivities.slice(0, limit) };
@@ -334,6 +328,14 @@ export async function advanceTaskStage(taskId: string) {
         },
       });
     }
+
+    const currentUser = await getCurrentUser();
+    await createActivityLog({
+      title: `تحديث أمر تشغيل (${task.title})`,
+      details: currentIndex < stages.length - 1 ? `نقل للمرحلة التالية: ${stages[currentIndex + 1]}` : `اكتمل تنفيذ أمر التشغيل بنجاح`,
+      type: "INFO",
+      userId: currentUser?.id,
+    });
 
     revalidatePath("/production");
     revalidatePath("/");
@@ -662,6 +664,13 @@ export async function deleteInvoice(invoiceId: string) {
 
     await prisma.invoice.delete({ where: { id: invoiceId } });
 
+    await createActivityLog({
+      title: `حذف فاتورة (${invoice.invoiceCode})`,
+      details: `تم حذف الفاتورة الخاصة بالعميل ${invoice.clientName} بقيمة: ${invoice.totalAmount} ج.س`,
+      type: "WARNING",
+      userId: currentUser?.id,
+    });
+
     revalidatePath("/invoices");
     revalidatePath("/production");
     revalidatePath("/");
@@ -871,6 +880,16 @@ export async function applyInventoryMovement(data: {
 
       return [updated, record] as const;
     });
+
+    if (data.referenceType !== "INVOICE") {
+      const typeLabel = data.type === "IN" ? "توريد" : data.type === "OUT" ? "صرف" : data.type === "RETURN" ? "إرجاع" : "تسوية";
+      await createActivityLog({
+        title: `حركة مخزون (${typeLabel}) - ${product.name}`,
+        details: `${data.reason} (الكمية: ${Math.abs(quantity)})`,
+        type: data.type === "IN" ? "SUCCESS" : data.type === "OUT" ? "WARNING" : "INFO",
+        userId: data.userId,
+      });
+    }
 
     revalidatePath("/inventory");
     revalidatePath("/");
@@ -1531,7 +1550,19 @@ export async function createExpense(data: {
 
 export async function deleteExpense(id: string) {
   try {
+    const expense = await prisma.expense.findUnique({ where: { id } });
     await prisma.expense.delete({ where: { id } });
+
+    if (expense) {
+      const currentUser = await getCurrentUser();
+      await createActivityLog({
+        title: `حذف سند مصروفات (${expense.category})`,
+        details: `تم حذف المصروف: ${expense.description} بمبلغ: ${expense.amount} ج.س`,
+        type: "WARNING",
+        userId: currentUser?.id,
+      });
+    }
+
     revalidatePath("/expenses");
     revalidatePath("/reports");
     revalidatePath("/");
