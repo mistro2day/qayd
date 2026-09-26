@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# قَيْـد (Qayd) - نظام إدارة المطابع ونقاط البيع المتكامل
 
-## Getting Started
+نظام إدارة سحابي متكامل ومخصص للمطابع والخدمات الإعلانية ومحلات القرطاسية.
 
-First, run the development server:
+- **الرابط المباشر**: [https://qayd.duckdns.org](https://qayd.duckdns.org)
+- **عنوان السيرفر (AWS EC2)**: `13.60.174.109`
+- **المطور**: محمد حيدر ([Facebook](https://www.facebook.com/mohamed.haydar))
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🗄️ إدارة وصيانة قاعدة البيانات (Database Management)
+
+قاعدة البيانات الحالية تعمل بنظام **SQLite** المدار عبر **Prisma ORM**، ومسار ملف البيانات في السيرفر هو:
+`/var/www/qayd/prisma/dev.db`
+
+### 1. فتح لوحة تحكم رسومية تفاعلية (Prisma Studio)
+لإدارة الجداول وتعديل وحذف السجلات مباشرة عبر واجهة رسومية في المتصفح، نفّذ الأمر التالي من جهازك في PowerShell:
+
+```powershell
+ssh -i "$env:USERPROFILE\.ssh\qyad.pem" -L 5555:localhost:5555 ubuntu@13.60.174.109 "cd /var/www/qayd && npx prisma studio"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ثم افتح المتصفح على:
+👉 **[http://localhost:5555](http://localhost:5555)**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. سحب نسخة احتياطية من السيرفر إلى جهازك (Download Backup)
+لتنزيل ملف قاعدة البيانات كاملاً من السيرفر إلى جهازك المحلي:
 
-## Learn More
+```powershell
+scp -i "$env:USERPROFILE\.ssh\qyad.pem" ubuntu@13.60.174.109:/var/www/qayd/prisma/dev.db ./backup_qayd_dev.db
+```
 
-To learn more about Next.js, take a look at the following resources:
+> **ملاحظة:** يمكنك تصفح وتعديل ملف `backup_qayd_dev.db` على جهازك باستخدام برنامج مجاني مثل [DB Browser for SQLite](https://sqlitebrowser.org/).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. استرجاع نسخة احتياطية ورفعها إلى السيرفر (Restore Backup)
+لرفع ملف قاعدة بيانات من جهازك إلى السيرفر وإعادة تشغيل التطبيق:
 
-## Deploy on Vercel
+```powershell
+# رفع الملف إلى السيرفر
+scp -i "$env:USERPROFILE\.ssh\qyad.pem" ./backup_qayd_dev.db ubuntu@13.60.174.109:/var/www/qayd/prisma/dev.db
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# إعادة تشغيل التطبيق لتطبيق التغييرات
+ssh -i "$env:USERPROFILE\.ssh\qyad.pem" ubuntu@13.60.174.109 "pm2 reload qayd"
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+### 4. النسخ الاحتياطي عبر المتصفح (Web UI)
+يمكنك أيضاً تنزيل نسخة احتياطية أو استعادتها مباشرة بنقرة واحدة من لوحة التحكم:
+👉 **https://qayd.duckdns.org/settings**
+
+---
+
+## 🚀 نشر التحديثات على السيرفر المباشر (Deployment)
+
+عند إجراء أي تعديلات برمجية جديدة، يمكنك دفع التعديلات وتحديث السيرفر بالأمر التالي:
+
+```powershell
+# 1. رفع التعديلات إلى GitHub
+git add .
+git commit -m "update message"
+git push origin main
+
+# 2. التحديث والبناء وإعادة التشغيل على سيرفر AWS
+ssh -i "$env:USERPROFILE\.ssh\qyad.pem" ubuntu@13.60.174.109 "cd /var/www/qayd && git pull origin main && npm run build && pm2 reload qayd"
+```
+
+---
+
+## 🛠️ أوامر فحص ومراقبة السيرفر (Server Monitoring)
+
+```powershell
+# متابعة سجلات أخطاء وعمليات التطبيق المباشرة
+ssh -i "$env:USERPROFILE\.ssh\qyad.pem" ubuntu@13.60.174.109 "pm2 logs qayd"
+
+# التحقق من حالة خدمات النظام
+ssh -i "$env:USERPROFILE\.ssh\qyad.pem" ubuntu@13.60.174.109 "pm2 status && sudo systemctl status nginx"
+
+# فحص استهلاك الذاكرة والمعالج
+ssh -i "$env:USERPROFILE\.ssh\qyad.pem" ubuntu@13.60.174.109 "free -h && df -h"
+```
+
+---
+
+## 💻 التشغيل المحلي للتطوير (Local Development)
+
+```bash
+# تثبيت الحزم
+npm install
+
+# تشغيل خادم التطوير المحلي
+npm run dev
+```
+
+افتح المتصفح على [http://localhost:3000](http://localhost:3000).
