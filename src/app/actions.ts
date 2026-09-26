@@ -386,6 +386,41 @@ export async function updateTaskStatus(taskId: string, status: string, assignedT
   }
 }
 
+export async function updateTaskDetails(data: {
+  taskId: string;
+  notes?: string;
+  priority?: string;
+  assignedToId?: string;
+}) {
+  try {
+    const updateData: any = {};
+    if (data.notes !== undefined) updateData.notes = data.notes || null;
+    if (data.priority !== undefined) updateData.priority = data.priority;
+    if (data.assignedToId !== undefined) updateData.assignedToId = data.assignedToId || null;
+
+    const updatedTask = await prisma.productionTask.update({
+      where: { id: data.taskId },
+      data: updateData,
+    });
+
+    if (data.notes) {
+      const currentUser = await getCurrentUser();
+      await createActivityLog({
+        title: `إضافة ملاحظة على أمر تشغيل (${updatedTask.title})`,
+        details: `ملاحظة: ${data.notes.slice(0, 60)}...`,
+        type: "INFO",
+        userId: currentUser?.id,
+      });
+    }
+
+    revalidatePath("/production");
+    revalidatePath("/");
+    return { success: true, task: updatedTask };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 // 3. Invoices & Fast POS
 export async function getInvoices() {
   try {
