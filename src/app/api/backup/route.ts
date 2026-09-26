@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       response.cookies.set("qayd_session", restoredUser.id, {
         httpOnly: true,
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: false,
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
       });

@@ -37,7 +37,7 @@ export async function getCurrentUser() {
         cookieStore.set("qayd_session", user.id, {
           httpOnly: true,
           sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
+          secure: false,
           path: "/",
           maxAge: 60 * 60 * 24 * 7,
         });
@@ -92,7 +92,7 @@ export async function loginUser(data: { username: string; password: string }) {
   cookieStore.set("qayd_session", user.id, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: false,
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });
