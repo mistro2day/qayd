@@ -8,6 +8,29 @@
 
 ---
 
+## 🔑 الدخول والاتصال بسيرفر AWS (SSH Access)
+
+يمكنك الدخول إلى الطرفية (Terminal) الخاصة بالسيرفر عبر بروتوكول SSH باستخدام المفتاح:
+
+### من جهازك عبر PowerShell (Windows):
+```powershell
+ssh -i "$env:USERPROFILE\.ssh\qyad.pem" ubuntu@13.60.174.109
+```
+أو إذا كنت داخل مجلد المشروع وكان المفتاح موجوداً به:
+```powershell
+ssh -i .\qyad.pem ubuntu@13.60.174.109
+```
+
+### من أنظمة Linux / macOS:
+```bash
+chmod 400 ~/.ssh/qyad.pem
+ssh -i ~/.ssh/qyad.pem ubuntu@13.60.174.109
+```
+
+> **مسار مجلد المشروع داخل السيرفر**: `/var/www/qayd`
+
+---
+
 ## 🗄️ إدارة وصيانة قاعدة البيانات (Database Management)
 
 قاعدة البيانات الحالية تعمل بنظام **SQLite** المدار عبر **Prisma ORM**، ومسار ملف البيانات في السيرفر هو:
