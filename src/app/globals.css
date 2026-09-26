@@ -1,0 +1,122 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+
+@theme {
+  --font-sans: 'Cairo', system-ui, -apple-system, sans-serif;
+  --font-cairo: 'Cairo', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --primary-teal: #2BA8A2;
+  --primary-light: #3CC4BD;
+  --primary-dark: #1E8C86;
+  --primary-bg: #E8F6F5;
+
+  --accent-gold: #FFD23F;
+  --accent-light: #FFE47A;
+  --accent-dark: #E6B800;
+
+  --coral: #EF6C4A;
+  --coral-light: #FF8A6A;
+  --coral-dark: #D45233;
+
+  --cream: #FFF8E7;
+  --sky-blue: #5DADE2;
+  
+  --surface-base: #F4FAF9;
+  --surface-card: #FFFFFF;
+  
+  --success: #27AE60;
+  --error: #E74C3C;
+}
+
+* {
+  font-family: 'Cairo', system-ui, -apple-system, sans-serif !important;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--surface-base);
+  color: #1A2E2C;
+  font-family: 'Cairo', system-ui, -apple-system, sans-serif !important;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100vh;
+}
+
+/* Flip7 Glow Shadows & Tactile Utility Classes */
+.shadow-teal-glow {
+  box-shadow: 0 4px 20px rgba(43, 168, 162, 0.35);
+}
+
+.shadow-gold-glow {
+  box-shadow: 0 4px 20px rgba(255, 210, 63, 0.45);
+}
+
+.shadow-coral-glow {
+  box-shadow: 0 4px 20px rgba(239, 108, 74, 0.35);
+}
+
+.shadow-sky-glow {
+  box-shadow: 0 4px 16px rgba(93, 173, 226, 0.35);
+}
+
+.shadow-card-subtle {
+  box-shadow: 0 4px 20px rgba(43, 168, 162, 0.08);
+}
+
+/* Cream Input Surface */
+.input-cream {
+  background-color: #FFF8E7;
+  border: 1.5px solid #E2D9C3;
+  color: #1E4D48;
+  transition: all 0.2s ease;
+}
+
+.input-cream:focus {
+  border-color: #2BA8A2;
+  box-shadow: 0 0 0 3px rgba(43, 168, 162, 0.2);
+  outline: none;
+}
+
+/* Tactile Pill Buttons */
+.btn-pill {
+  border-radius: 9999px;
+  font-weight: 700;
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-pill:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.btn-pill:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+/* Print specific rules for Invoices, Contracts, and Reports */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-page {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+}

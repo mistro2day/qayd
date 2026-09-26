@@ -1,0 +1,247 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ShopSettings {
+  id                   String   @id @default("default")
+  shopName             String   @default("الخواض لخدمات الطباعة")
+  systemName           String   @default("قَيْد")
+  branchPrefix         String   @default("KHW")
+  logoUrl              String?
+  commercialReg        String?
+  taxNumber            String?
+  phone                String   @default("01XXXXXXXX")
+  email                String?
+  address              String   @default("السودان - الخرطوم / أم درمان")
+  currency             String   @default("ج.س")
+  defaultTaxRate       Float    @default(0)
+  invoiceFooter        String   @default("شكراً لتعاملكم مع الخواض لخدمات الطباعة. المطبوعات المعتمدة لا تُرد ولا تُستبدل.")
+  defaultContractTerms String   @default("1. يلتزم الطرف الأول بتسليم المطبوعات في المواعيد المحددة.\n2. يلتزم الطرف الثاني بدفع المستحقات وفق الجدول المتفق عليه.\n3. أي تعديل في التصميم المعتمد يتحمل الطرف الثاني تكاليفه الإضافية.")
+  updatedAt            DateTime @updatedAt
+}
+
+model User {
+  id           String             @id @default(cuid())
+  username     String             @unique
+  fullName     String
+  role         String             @default("CASHIER") // SUPER_ADMIN, ADMIN, CASHIER, DESIGNER, TECHNICIAN, ACCOUNTANT
+  isActive     Boolean            @default(true)
+  passwordHash String?
+  phone        String?
+  notes        String?
+  permissions  Json?
+  createdAt    DateTime           @default(now())
+  activities   ActivityLog[]
+  stockMoves   InventoryMovement[]
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  type      String   @default("INFO")
+  title     String
+  details   String?
+  createdAt DateTime @default(now())
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  RETURN
+}
+
+model InventoryMovement {
+  id            String        @id @default(cuid())
+  productId     String
+  product       Product       @relation(fields: [productId], references: [id])
+  type          MovementType
+  reason        String
+  quantity      Int
+  previousStock Int
+  newStock      Int
+  referenceType String?
+  referenceId   String?
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id])
+  createdAt     DateTime      @default(now())
+
+  @@index([productId, createdAt])
+}
+
+model Product {
+  id                 String             @id @default(cuid())
+  sku                String             @unique
+  name               String
+  category           String
+  unit               String
+  costPrice          Float
+  sellingPrice       Float
+  minNegotiablePrice Float
+  stockQuantity      Int                @default(0)
+  minStockAlert      Int                @default(5)
+  createdAt          DateTime           @default(now())
+  invoiceItems       InvoiceItem[]
+  movements          InventoryMovement[]
+}
+
+model PricingTier {
+  id                 String   @id @default(cuid())
+  itemName           String
+  unit               String
+  baseCost           Float    @default(0)
+  officialPrice      Float
+  minNegotiablePrice Float
+  wholesalePrice     Float
+  isActive           Boolean  @default(true)
+}
+
+model Customer {
+  id          String     @id @default(cuid())
+  name        String
+  companyName String?
+  phone       String
+  taxNumber   String?
+  balance     Float      @default(0)
+  invoices    Invoice[]
+  contracts   Contract[]
+  createdAt   DateTime   @default(now())
+}
+
+model Contract {
+  id           String         @id @default(cuid())
+  contractCode String         @unique
+  customerId   String
+  customer     Customer       @relation(fields: [customerId], references: [id])
+  title        String
+  startDate    DateTime
+  endDate      DateTime
+  billingCycle String
+  totalValue   Float
+  status       String         @default("ACTIVE")
+  terms        String
+  notes        String?
+  items        ContractItem[]
+  createdAt    DateTime       @default(now())
+}
+
+model ContractItem {
+  id               String   @id @default(cuid())
+  contractId       String
+  contract         Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  description      String
+  periodicQuantity Int
+  unitPrice        Float
+  total            Float
+}
+
+model Supplier {
+  id            String    @id @default(cuid())
+  name          String
+  contactPerson String?
+  phone         String
+  supplyType    String
+  balance       Float     @default(0)
+  expenses      Expense[]
+  createdAt     DateTime  @default(now())
+}
+
+model Invoice {
+  id             String           @id @default(cuid())
+  invoiceCode    String           @unique
+  customerId     String?
+  customer       Customer?        @relation(fields: [customerId], references: [id])
+  contractId     String?
+  clientName     String
+  clientPhone    String?
+  subtotal       Float
+  discountRate   Float            @default(0)
+  discountAmount Float            @default(0)
+  taxRate        Float            @default(0)
+  taxAmount      Float            @default(0)
+  totalAmount    Float
+  paidAmount     Float            @default(0)
+  status         String
+  createdAt      DateTime         @default(now())
+  items          InvoiceItem[]
+  tasks          ProductionTask[]
+  payments       InvoicePayment[]
+}
+
+model InvoicePayment {
+  id        String   @id @default(cuid())
+  invoiceId  String
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount     Float
+  method     String   @default("CASH")
+  note       String?
+  createdAt  DateTime @default(now())
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  itemType    String   @default("PRINT")
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Float
+  total       Float
+}
+
+model ProductionTask {
+  id           String    @id @default(cuid())
+  invoiceId    String
+  invoice      Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  assignedToId String?
+  assignedTo   Employee? @relation(fields: [assignedToId], references: [id])
+  title        String
+  stage        String    @default("DESIGN")
+  status       String    @default("PENDING")
+  priority     String    @default("NORMAL")
+  dueDate      DateTime?
+  notes        String?
+  createdAt    DateTime  @default(now())
+  completedAt  DateTime?
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  supplierId  String?
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  category    String
+  description String
+  amount      Float
+  date        DateTime  @default(now())
+}
+
+model Employee {
+  id           String              @id @default(cuid())
+  name         String
+  jobTitle     String
+  payType      String // DAILY, WEEKLY, MONTHLY
+  baseRate     Float
+  phone        String?
+  status       String              @default("ACTIVE") // ACTIVE, ON_LEAVE, TERMINATED
+  joinedAt     DateTime            @default(now())
+  transactions SalaryTransaction[]
+  tasks        ProductionTask[]
+}
+
+model SalaryTransaction {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  amountPaid  Float
+  payPeriod   String
+  paidAt      DateTime @default(now())
+  notes       String?
+}
