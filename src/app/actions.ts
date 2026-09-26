@@ -1729,3 +1729,283 @@ export async function getReportsData(filters?: { startDate?: string; endDate?: s
   }
 }
 
+// 12. Customers Management
+export async function getCustomersList() {
+  try {
+    const [customers, settings] = await Promise.all([
+      prisma.customer.findMany({
+        orderBy: { createdAt: "desc" },
+        include: {
+          _count: {
+            select: { invoices: true, contracts: true },
+          },
+          invoices: {
+            select: {
+              id: true,
+              totalAmount: true,
+              paidAmount: true,
+            },
+          },
+        },
+      }),
+      prisma.shopSettings.findUnique({ where: { id: "default" } }),
+    ]);
+
+    const formatted = customers.map((c) => {
+      const totalInvoiced = c.invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+      const totalPaid = c.invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
+      const outstandingBalance = totalInvoiced - totalPaid;
+      return {
+        ...c,
+        totalInvoiced,
+        totalPaid,
+        outstandingBalance,
+      };
+    });
+
+    return {
+      success: true,
+      customers: formatted,
+      currency: settings?.currency || "ج.س",
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message, customers: [] };
+  }
+}
+
+export async function saveCustomer(data: {
+  id?: string;
+  name: string;
+  companyName?: string;
+  phone: string;
+  taxNumber?: string;
+}) {
+  try {
+    const currentUser = await getCurrentUser();
+    let customer;
+
+    if (data.id) {
+      customer = await prisma.customer.update({
+        where: { id: data.id },
+        data: {
+          name: data.name,
+          companyName: data.companyName || null,
+          phone: data.phone,
+          taxNumber: data.taxNumber || null,
+        },
+      });
+
+      await createActivityLog({
+        title: `تعديل بيانات العميل (${customer.name})`,
+        details: `رقم الهاتف: ${customer.phone}`,
+        type: "INFO",
+        userId: currentUser?.id,
+      });
+    } else {
+      customer = await prisma.customer.create({
+        data: {
+          name: data.name,
+          companyName: data.companyName || null,
+          phone: data.phone,
+          taxNumber: data.taxNumber || null,
+        },
+      });
+
+      await createActivityLog({
+        title: `إضافة عميل جديد (${customer.name})`,
+        details: `رقم الهاتف: ${customer.phone}`,
+        type: "SUCCESS",
+        userId: currentUser?.id,
+      });
+    }
+
+    revalidatePath("/customers");
+    revalidatePath("/invoices");
+    revalidatePath("/contracts");
+    revalidatePath("/");
+    return { success: true, customer };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteCustomer(id: string) {
+  try {
+    const customer = await prisma.customer.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { invoices: true, contracts: true },
+        },
+      },
+    });
+
+    if (!customer) {
+      return { success: false, error: "العميل غير موجود" };
+    }
+
+    if (customer._count.invoices > 0 || customer._count.contracts > 0) {
+      return {
+        success: false,
+        error: `لا يمكن حذف العميل لوجود (${customer._count.invoices}) فواتير و (${customer._count.contracts}) عقود مرتبطة به.`,
+      };
+    }
+
+    await prisma.customer.delete({ where: { id } });
+
+    const currentUser = await getCurrentUser();
+    await createActivityLog({
+      title: `حذف عميل (${customer.name})`,
+      details: `تم حذف العميل بنجاح`,
+      type: "WARNING",
+      userId: currentUser?.id,
+    });
+
+    revalidatePath("/customers");
+    revalidatePath("/invoices");
+    revalidatePath("/contracts");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// 13. Suppliers Management
+export async function getSuppliersList() {
+  try {
+    const [suppliers, settings] = await Promise.all([
+      prisma.supplier.findMany({
+        orderBy: { createdAt: "desc" },
+        include: {
+          _count: {
+            select: { expenses: true },
+          },
+          expenses: {
+            select: {
+              id: true,
+              amount: true,
+              date: true,
+              description: true,
+            },
+          },
+        },
+      }),
+      prisma.shopSettings.findUnique({ where: { id: "default" } }),
+    ]);
+
+    const formatted = suppliers.map((s) => {
+      const totalSupplied = s.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+      return {
+        ...s,
+        totalSupplied,
+      };
+    });
+
+    return {
+      success: true,
+      suppliers: formatted,
+      currency: settings?.currency || "ج.س",
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message, suppliers: [] };
+  }
+}
+
+export async function saveSupplier(data: {
+  id?: string;
+  name: string;
+  contactPerson?: string;
+  phone: string;
+  supplyType: string;
+}) {
+  try {
+    const currentUser = await getCurrentUser();
+    let supplier;
+
+    if (data.id) {
+      supplier = await prisma.supplier.update({
+        where: { id: data.id },
+        data: {
+          name: data.name,
+          contactPerson: data.contactPerson || null,
+          phone: data.phone,
+          supplyType: data.supplyType,
+        },
+      });
+
+      await createActivityLog({
+        title: `تعديل بيانات المورد (${supplier.name})`,
+        details: `النوع: ${supplier.supplyType} - هاتف: ${supplier.phone}`,
+        type: "INFO",
+        userId: currentUser?.id,
+      });
+    } else {
+      supplier = await prisma.supplier.create({
+        data: {
+          name: data.name,
+          contactPerson: data.contactPerson || null,
+          phone: data.phone,
+          supplyType: data.supplyType,
+        },
+      });
+
+      await createActivityLog({
+        title: `إضافة مورد جديد (${supplier.name})`,
+        details: `النوع: ${supplier.supplyType} - هاتف: ${supplier.phone}`,
+        type: "SUCCESS",
+        userId: currentUser?.id,
+      });
+    }
+
+    revalidatePath("/suppliers");
+    revalidatePath("/expenses");
+    revalidatePath("/inventory");
+    revalidatePath("/");
+    return { success: true, supplier };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteSupplier(id: string) {
+  try {
+    const supplier = await prisma.supplier.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { expenses: true },
+        },
+      },
+    });
+
+    if (!supplier) {
+      return { success: false, error: "المورد غير موجود" };
+    }
+
+    if (supplier._count.expenses > 0) {
+      return {
+        success: false,
+        error: `لا يمكن حذف المورد لوجود (${supplier._count.expenses}) سندات مصروفات ومشتريات مسجلة باسمه.`,
+      };
+    }
+
+    await prisma.supplier.delete({ where: { id } });
+
+    const currentUser = await getCurrentUser();
+    await createActivityLog({
+      title: `حذف مورد (${supplier.name})`,
+      details: `تم حذف المورد بنجاح`,
+      type: "WARNING",
+      userId: currentUser?.id,
+    });
+
+    revalidatePath("/suppliers");
+    revalidatePath("/expenses");
+    revalidatePath("/inventory");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+

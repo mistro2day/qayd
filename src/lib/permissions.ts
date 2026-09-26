@@ -6,6 +6,8 @@ export type PermissionMatrix = {
 export const PAGE_PERMISSION_LABELS: Record<string, string> = {
   dashboard: "الرئيسية ولوحة المؤشرات",
   invoices: "الفواتير ونقاط البيع (POS)",
+  customers: "دليل وحسابات العملاء",
+  suppliers: "دليل وسجلات الموردين",
   production: "خط التشغيل والمطبعة (الكانبان)",
   inventory: "المخزون ومستلزمات الطباعة",
   contracts: "العقود والتعاقدات الدورية",
@@ -64,6 +66,8 @@ export const DEFAULT_PERMISSION_MATRIX: Record<string, PermissionMatrix> = {
     pages: {
       dashboard: true,
       invoices: true,
+      customers: true,
+      suppliers: true,
       production: true,
       inventory: true,
       contracts: true,
@@ -107,6 +111,8 @@ export const DEFAULT_PERMISSION_MATRIX: Record<string, PermissionMatrix> = {
     pages: {
       dashboard: true,
       invoices: true,
+      customers: true,
+      suppliers: true,
       production: true,
       inventory: true,
       contracts: true,
@@ -150,6 +156,8 @@ export const DEFAULT_PERMISSION_MATRIX: Record<string, PermissionMatrix> = {
     pages: {
       dashboard: true,
       invoices: true,
+      customers: true,
+      suppliers: false,
       production: false,
       inventory: false,
       contracts: false,
@@ -193,6 +201,8 @@ export const DEFAULT_PERMISSION_MATRIX: Record<string, PermissionMatrix> = {
     pages: {
       dashboard: true,
       invoices: true,
+      customers: true,
+      suppliers: true,
       production: false,
       inventory: true,
       contracts: true,

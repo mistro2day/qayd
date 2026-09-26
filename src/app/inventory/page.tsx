@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 import {
   Package,
   Plus,
@@ -16,6 +17,7 @@ import {
   MoveRight,
   MoveLeft,
   RefreshCw,
+  Truck,
 } from "lucide-react";
 import {
   getCurrentUser,
@@ -266,16 +268,25 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            setNewSku(`PRD-${Date.now().toString().slice(-4)}`);
-            setIsNewProductOpen(true);
-          }}
-          className="btn-pill px-5 py-2.5 bg-gradient-to-r from-[#2BA8A2] to-[#1E8C86] text-white text-sm font-black shadow-teal-glow hover:brightness-110"
-        >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          إضافة صنف مخزني جديد
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link
+            href="/suppliers"
+            className="btn-pill px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-all flex items-center gap-1.5"
+          >
+            <Truck className="w-4 h-4 text-[#D45233]" />
+            <span>دليل الموردين</span>
+          </Link>
+          <button
+            onClick={() => {
+              setNewSku(`PRD-${Date.now().toString().slice(-4)}`);
+              setIsNewProductOpen(true);
+            }}
+            className="btn-pill px-5 py-2.5 bg-gradient-to-r from-[#2BA8A2] to-[#1E8C86] text-white text-sm font-black shadow-teal-glow hover:brightness-110"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            إضافة صنف مخزني جديد
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}

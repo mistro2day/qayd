@@ -20,6 +20,8 @@ import {
   X,
   Users,
   Database,
+  Contact2,
+  Truck,
 } from "lucide-react";
 import { getRecentActivities } from "../app/actions";
 import { canAccessAction, canAccessPage, getEffectivePermissions } from "@/lib/permissions";
@@ -116,6 +118,18 @@ export function AppShell({
               <Link href="/invoices" className="flex items-center gap-3 rounded-2xl px-3 py-2.5 font-bold text-[#1E8C86] hover:bg-[#E8F6F5] hover:shadow-sm transition-all">
                 <Receipt className="w-4 h-4" />
                 الفواتير و POS
+              </Link>
+            )}
+            {canAccessPage(sessionUser, "customers") && (
+              <Link href="/customers" className="flex items-center gap-3 rounded-2xl px-3 py-2.5 font-bold text-[#1E8C86] hover:bg-[#E8F6F5] hover:shadow-sm transition-all">
+                <Contact2 className="w-4 h-4 text-[#2BA8A2]" />
+                العملاء
+              </Link>
+            )}
+            {canAccessPage(sessionUser, "suppliers") && (
+              <Link href="/suppliers" className="flex items-center gap-3 rounded-2xl px-3 py-2.5 font-bold text-[#1E8C86] hover:bg-[#E8F6F5] hover:shadow-sm transition-all">
+                <Truck className="w-4 h-4 text-[#D45233]" />
+                الموردين
               </Link>
             )}
             {canAccessPage(sessionUser, "production") && (
@@ -360,7 +374,7 @@ export function AppShell({
               onClick={() => setShowMobileMenu((prev) => !prev)}
               className={`flex flex-col items-center justify-center flex-1 h-full py-1 transition-all ${
                 showMobileMenu ||
-                ["/contracts", "/expenses", "/employees", "/reports", "/settings"].some((p) =>
+                ["/customers", "/suppliers", "/contracts", "/expenses", "/employees", "/reports", "/settings"].some((p) =>
                   pathname.startsWith(p)
                 )
                   ? "text-[#1E8C86] font-black"
@@ -370,7 +384,7 @@ export function AppShell({
               <div
                 className={`p-1 rounded-xl transition-all ${
                   showMobileMenu ||
-                  ["/contracts", "/expenses", "/employees", "/reports", "/settings"].some((p) =>
+                  ["/customers", "/suppliers", "/contracts", "/expenses", "/employees", "/reports", "/settings"].some((p) =>
                     pathname.startsWith(p)
                   )
                     ? "bg-[#E8F6F5] text-[#1E8C86]"
@@ -408,6 +422,28 @@ export function AppShell({
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
+                {canAccessPage(sessionUser, "customers") && (
+                  <Link
+                    href="/customers"
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center gap-3 p-3 rounded-2xl bg-[#F4FAF9] border border-[#2BA8A2]/10 hover:border-[#2BA8A2]/40 transition-all font-bold text-xs text-[#1E8C86]"
+                  >
+                    <Contact2 className="w-4 h-4 text-[#2BA8A2]" />
+                    <span>دليل العملاء</span>
+                  </Link>
+                )}
+
+                {canAccessPage(sessionUser, "suppliers") && (
+                  <Link
+                    href="/suppliers"
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center gap-3 p-3 rounded-2xl bg-[#FFF1EE] border border-[#D45233]/15 hover:border-[#D45233]/40 transition-all font-bold text-xs text-[#D45233]"
+                  >
+                    <Truck className="w-4 h-4 text-[#D45233]" />
+                    <span>دليل الموردين</span>
+                  </Link>
+                )}
+
                 {canAccessPage(sessionUser, "contracts") && (
                   <Link
                     href="/contracts"

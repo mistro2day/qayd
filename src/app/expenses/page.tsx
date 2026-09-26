@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 import {
   TrendingDown,
   PlusCircle,
@@ -11,6 +12,7 @@ import {
   Filter,
   ArrowDownRight,
   PieChart,
+  Truck,
 } from "lucide-react";
 import { getExpenses, createExpense, deleteExpense } from "./../actions";
 
@@ -127,16 +129,25 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            setExpenseDate(new Date().toISOString().slice(0, 10));
-            setIsModalOpen(true);
-          }}
-          className="btn-pill px-4 py-2.5 bg-gradient-to-r from-[#D45233] to-[#B83E22] text-white text-xs font-black shadow-sm flex items-center gap-2 hover:brightness-105"
-        >
-          <PlusCircle className="w-4 h-4" />
-          تسجيل سند صرف جديد
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link
+            href="/suppliers"
+            className="btn-pill px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-all flex items-center gap-1.5"
+          >
+            <Truck className="w-4 h-4 text-[#D45233]" />
+            <span>دليل الموردين</span>
+          </Link>
+          <button
+            onClick={() => {
+              setExpenseDate(new Date().toISOString().slice(0, 10));
+              setIsModalOpen(true);
+            }}
+            className="btn-pill px-4 py-2.5 bg-gradient-to-r from-[#D45233] to-[#B83E22] text-white text-xs font-black shadow-sm flex items-center gap-2 hover:brightness-105"
+          >
+            <PlusCircle className="w-4 h-4" />
+            تسجيل سند صرف جديد
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}

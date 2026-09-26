@@ -16,6 +16,7 @@ import {
   Package,
   Layers,
   X,
+  Contact2,
 } from "lucide-react";
 import {
   getInvoices,
@@ -346,19 +347,28 @@ function InvoicesContent() {
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            setIsEditMode(false);
-            setEditingInvoiceId(null);
-            setInvoiceCode(catalog?.nextCode || `KHW-INV-${Date.now()}`);
-            setIsModalOpen(true);
-            setPaidAmount(0);
-          }}
-          className="btn-pill px-5 py-2.5 bg-gradient-to-r from-[#FFD23F] to-[#FFE47A] text-[#1E4D48] text-sm font-black shadow-gold-glow border border-[#E6B800]"
-        >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          فاتورة جديدة (POS)
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link
+            href="/customers"
+            className="btn-pill px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-all flex items-center gap-1.5"
+          >
+            <Contact2 className="w-4 h-4 text-[#2BA8A2]" />
+            <span>دليل العملاء</span>
+          </Link>
+          <button
+            onClick={() => {
+              setIsEditMode(false);
+              setEditingInvoiceId(null);
+              setInvoiceCode(catalog?.nextCode || `KHW-INV-${Date.now()}`);
+              setIsModalOpen(true);
+              setPaidAmount(0);
+            }}
+            className="btn-pill px-5 py-2.5 bg-gradient-to-r from-[#FFD23F] to-[#FFE47A] text-[#1E4D48] text-sm font-black shadow-gold-glow border border-[#E6B800]"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            فاتورة جديدة (POS)
+          </button>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
