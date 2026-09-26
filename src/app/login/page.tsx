@@ -7,7 +7,7 @@ import { loginUser } from "../actions";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ username: "admin", password: "admin123" });
+  const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -60,7 +60,8 @@ export default function LoginPage() {
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
                 className="w-full bg-transparent text-sm font-bold text-[#142826] outline-none placeholder:text-gray-400"
                 dir="ltr"
-                placeholder="admin"
+                placeholder="أدخل اسم المستخدم"
+                required
               />
             </div>
           </div>
@@ -77,7 +78,8 @@ export default function LoginPage() {
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 className="w-full bg-transparent text-sm font-bold text-[#142826] outline-none placeholder:text-gray-400"
                 dir="ltr"
-                placeholder="admin123"
+                placeholder="••••••••"
+                required
               />
             </div>
           </div>
@@ -92,24 +94,29 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-gradient-to-r from-[#2BA8A2] to-[#1E8C86] px-4 py-3 text-sm font-black text-white shadow-teal-glow disabled:opacity-70"
+            className="w-full rounded-2xl bg-gradient-to-r from-[#2BA8A2] to-[#1E8C86] px-4 py-3 text-sm font-black text-white shadow-teal-glow hover:opacity-95 transition-all disabled:opacity-70 cursor-pointer"
           >
             {loading ? "جاري تسجيل الدخول..." : "دخول النظام"}
           </button>
         </form>
 
-        <div className="mt-5 rounded-2xl border border-[#FFD23F]/30 bg-[#FFF8E7] px-3 py-2 text-center text-[11px] font-bold text-[#1E4D48]">
-          الحساب الافتراضي: <span className="font-black">admin</span> / <span className="font-black">admin123</span>
+        <div className="mt-6 pt-5 border-t border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 text-center">
+          <p className="text-xs text-gray-500 font-bold flex items-center gap-1.5">
+            <span>تطوير :</span>
+            <span className="text-[#142826] font-black">محمد حيدر</span>
+          </p>
+          <a
+            href="https://www.facebook.com/mohamed.haydar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1877F2]/10 text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors text-xs font-black"
+          >
+            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span>حساب المطور على فيسبوك</span>
+          </a>
         </div>
-
-        <button
-          type="button"
-          onClick={() => router.push("/")}
-          className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[#1E8C86]"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          العودة للصفحة الرئيسية
-        </button>
       </div>
     </div>
   );
